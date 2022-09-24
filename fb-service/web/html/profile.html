@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        body {
+            font-family: 'Helvetica', sans-serif;
+            color: #fff;
+            margin: 0px;
+            padding: 0px;
+            background-color: #00ac85;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .app__container {
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        a {
+            margin: auto;
+            background: #fff;
+            text-align: center;
+            padding: 15px 30px;
+            font-size: 20px;
+            text-decoration: none;
+            color: #000;
+            font-weight: 400;
+        }
+    </style>
+</head>
+<body>
+<div class="app__container">
+    <h1>Hello
+        <span id="name-placeholder">________</span>
+    </h1>
+    <a href="#" id="logout-button">Logout</a>
+</div>
+</body>
+<script>
+
+    function getCookieValue(a) {
+        var b = document.cookie.match('(^|[^;]+)\\s*' + a + '\\s*=\\s*([^;]+)');
+        return b ? b.pop() : '';
+    }
+
+    function deleteCookie(name) {
+        document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    }
+
+    (() => {
+        let authToken = getCookieValue('Authorization')
+        console.log(authToken)
+        if(authToken !== null && authToken !== undefined && authToken !== "") {
+            authToken = JSON.parse(authToken);
+        } else {
+            window.location.href = '/';
+            return;
+        }
+
+        const namePlaceholder = document.querySelector("#name-placeholder");
+
+        fetch(`/userDetails`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': undefined,
+                'Authorization': `${authToken}`
+            }
+        })
+            .then((resp) => resp.json())
+            .then((result) => {
+                if (result.Code === 200) {
+                    namePlaceholder.innerHTML = result.Response;
+                } else {
+                    alert(result.Message)
+                }
+            })
+            .catch((error) => {
+                alert(error.Message)
+            });
+    })();
+
+    const logoutButton = document.querySelector("#logout-button");
+    logoutButton.onclick = (event) => {
+        deleteCookie('Authorization')
+        window.location.href = '/';
+    };
+
+
+</script>
+</html>
